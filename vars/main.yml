@@ -1,0 +1,7 @@
+---
+# vars file for journald
+
+rsyslog_conf_path: /etc/rsyslog.conf
+rsyslogd_path: /etc/rsyslog.d
+
+journald_conf_path: /etc/systemd/journald.conf

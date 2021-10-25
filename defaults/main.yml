@@ -1,0 +1,6 @@
+---
+# defaults file for journald
+
+# Should journald compress large files
+# Recommended to set to true/yes
+journald_compress: yes
