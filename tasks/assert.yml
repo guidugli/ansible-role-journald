@@ -1,7 +1,7 @@
 ---
 
 - name: Validate if variables have valid values
-  assert:
+  ansible.builtin.assert:
     that:
       - journald_compress is defined
       - journald_compress | type_debug == 'bool'

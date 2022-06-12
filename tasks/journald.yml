@@ -1,7 +1,7 @@
 ---
 
 - name: Find any rsyslog files where all logs are being forwarded to a loghost
-  shell: >
+  ansible.builtin.shell: >
     /usr/bin/grep -l -s -E '^\*\.\*\s+action\(type="omfwd"' {{ rsyslog_conf_path }} {{ rsyslogd_path }}/*.conf
   register: rsyslog_forward_out
   changed_when: false
@@ -13,7 +13,7 @@
   vars:
     rsyslog_forwarding: "{{ rsyslog_forward_out.stdout | length > 0 }}"
     str: "{{ 'yes' if rsyslog_forwarding else 'no' }}"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ journald_conf_path }}"
     regexp: "^#?ForwardToSyslog=.*$"
     line: "ForwardToSyslog={{ str }}"
@@ -21,13 +21,13 @@
 - name: Ensure journald compresses large files
   vars:
     str: "{{ 'yes' if (journald_compress | default(true)) else 'no' }}"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ journald_conf_path }}"
     regexp: "^#?Compress=.*$"
     line: "Compress={{ str }}"
 
 - name: Ensure journald writes to peristent disk
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ journald_conf_path }}"
     regexp: "^#?Storage=.*$"
     line: "Storage=persistent"
