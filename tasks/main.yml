@@ -1,8 +1,8 @@
 ---
 # tasks file for journald
 
-- name: include assert.yml
+- name: Include assert.yml
   ansible.builtin.include_tasks: assert.yml
 
-- name: include journald.yml
+- name: Include journald.yml
   ansible.builtin.include_tasks: journald.yml
