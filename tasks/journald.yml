@@ -1,5 +1,20 @@
 ---
 
+- name: Check if journald exists
+  ansible.builtin.stat:
+    path: "{{ journald_conf_path }}"
+  register: stat_cmd
+
+- name: Copy from /usr/lib/systemd/journald.conf if does not exist
+  ansible.builtin.copy:
+    src: /usr/lib/systemd/journald.conf
+    dest: "{{ journald_conf_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+    remote_src: yes
+  when: not stat_cmd.stat.exists
+
 - name: Find any rsyslog files where all logs are being forwarded to a loghost
   ansible.builtin.shell: >
     /usr/bin/grep -l -s -E '^\*\.\*\s+action\(type="omfwd"' {{ rsyslog_conf_path }} {{ rsyslogd_path }}/*.conf
