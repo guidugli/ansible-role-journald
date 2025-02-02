@@ -1,0 +1,88 @@
+
+[Journal]
+Storage={{ journald_storage }}
+Compress={{ 'yes' if journald_compress else 'no' }}
+{% if journald_seal is defined -%}
+Seal={{ 'yes' if journald_seal else 'no' }}
+{% endif %}
+{%- if journald_split_mode is defined -%}
+SplitMode={{ journald_split_mode }}
+{% endif %}
+{%- if journald_sync_interval_sec is defined -%}
+SyncIntervalSec={{ journald_sync_interval_sec }}
+{% endif %}
+{%- if journald_rate_limit_interval_sec is defined -%}
+RateLimitIntervalSec={{ journald_rate_limit_interval_sec }}
+{% endif %}
+{%- if journald_rate_limit_burst is defined -%}
+RateLimitBurst={{ journald_rate_limit_burst }}
+{% endif %}
+{%- if journald_system_max_use is defined -%}
+SystemMaxUse={{ journald_system_max_use }}
+{% endif %}
+{%- if journald_system_keep_free is defined -%}
+SystemKeepFree={{ journald_system_keep_free }}
+{% endif %}
+{%- if journald_system_max_file_size is defined -%}
+SystemMaxFileSize={{ journald_system_max_file_size }}
+{% endif %}
+{%- if journald_system_max_files is defined -%}
+SystemMaxFiles={{ journald_system_max_files }}
+{% endif %}
+{%- if journald_runtime_max_use is defined -%}
+RuntimeMaxUse={{ journald_runtime_max_use }}
+{% endif %}
+{%- if journald_runtime_keep_free is defined -%}
+RuntimeKeepFree={{ journald_runtime_keep_free }}
+{% endif %}
+{%- if journald_runtime_max_file_size is defined -%}
+RuntimeMaxFileSize={{ journald_runtime_max_file_size }}
+{% endif %}
+{%- if journald_runtime_max_files is defined -%}
+RuntimeMaxFiles={{ journald_runtime_max_files }}
+{% endif %}
+{%- if journald_max_retention_sec is defined -%}
+MaxRetentionSec={{ journald_max_retention_sec }}
+{% endif %}
+{%- if journal_max_file_sec is defined -%}
+MaxFileSec={{ journal_max_file_sec }}
+{% endif %}
+{%- if journald_forward_to_syslog is defined -%}
+ForwardToSyslog={{ 'yes' if journald_forward_to_syslog else 'no' }}
+{% endif %}
+{%- if journald_forward_to_kmsg is defined -%}
+ForwardToKMsg={{ 'yes' if journald_forward_to_kmsg else 'no' }}
+{% endif %}
+{%- if journald_forward_to_console is defined -%}
+ForwardToConsole={{ 'yes' if journald_forward_to_console else 'no' }}
+{% endif %}
+{%- if journald_forward_to_wall is defined -%}
+ForwardToWall={{ 'yes' if journald_forward_to_wall else 'no' }}
+{% endif %}
+{%- if journald_tty_path is defined -%}
+TTYPath={{ journald_tty_path }}
+{% endif %}
+{%- if journald_max_level_store is defined -%}
+MaxLevelStore={{ journald_max_level_store }}
+{% endif %}
+{%- if journald_max_level_syslog is defined -%}
+#MaxLevelSyslog={{ journald_max_level_syslog }}
+{% endif %}
+{%- if journald_max_level_kmsg is defined -%}
+MaxLevelKMsg={{ journald_max_level_kmsg }}
+{% endif %}
+{%- if journald_max_level_console is defined -%}
+MaxLevelConsole={{ journald_max_level_console }}
+{% endif %}
+{%- if journald_max_level_wall is defined -%}
+#MaxLevelWall={{ journald_max_level_wall }}
+{% endif %}
+{%- if journald_line_max is defined -%}
+#LineMax={{ journald_line_max }}
+{% endif %}
+{%- if journald_read_kmsg is defined -%}
+ReadKMsg={{ 'yes' if journald_read_kmsg else 'no' }}
+{% endif %}
+{%- if journald_audit is defined -%}
+Audit={{ 'yes' if journald_audit else 'no' }}
+{% endif %}

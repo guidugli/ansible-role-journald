@@ -1,5 +1,7 @@
 ---
 - name: Converge
   hosts: all
+  vars:
+    journald_enable_remote_logging: true
   roles:
     - guidugli.journald

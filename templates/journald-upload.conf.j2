@@ -1,0 +1,14 @@
+[Upload]
+{% if journald_remote_url is defined -%}
+URL={{ journald_remote_url }}
+{% endif -%}
+{%- if journald_remote_server_key_file is defined -%}
+ServerKeyFile={{ journald_remote_server_key_file }}
+{% endif -%}
+{%- if journald_remote_server_cert_file is defined -%}
+ServerCertificateFile={{ journald_remote_server_cert_file }}
+{% endif -%}
+{%- if journald_trusted_cert_file is defined -%}
+TrustedCertificateFile={{ journald_trusted_cert_file }}
+{% endif -%}
+

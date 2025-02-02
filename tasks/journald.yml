@@ -1,48 +1,58 @@
 ---
 
-- name: Check if journald exists
-  ansible.builtin.stat:
-    path: "{{ journald_conf_path }}"
-  register: stat_cmd
+- name: Ensure journald service is enabled
+  ansible.builtin.systemd_service:
+    name: systemd-journald.service
+    state: started
+    enabled: true
+    masked: false
 
-- name: Copy from /usr/lib/systemd/journald.conf if does not exist
-  ansible.builtin.copy:
-    src: /usr/lib/systemd/journald.conf
-    dest: "{{ journald_conf_path }}"
+#- name: Check if journald exists
+#  ansible.builtin.stat:
+#    path: "{{ journald_conf_path }}"
+#  register: stat_cmd
+
+#- name: Copy from /usr/lib/systemd/journald.conf if does not exist
+#  ansible.builtin.copy:
+#    src: /usr/lib/systemd/journald.conf
+#    dest: "{{ journald_conf_path }}"
+#    owner: root
+#    group: root
+#    mode: '0644'
+#    remote_src: yes
+#  when: not stat_cmd.stat.exists
+
+- name: Create journald.conf.d directory if it does not exist
+  ansible.builtin.file:
+    path: "{{ journald_confd_directory }}"
+    state: directory
     owner: root
     group: root
-    mode: '0644'
-    remote_src: yes
-  when: not stat_cmd.stat.exists
+    mode: 0755
 
-- name: Find any rsyslog files where all logs are being forwarded to a loghost
-  ansible.builtin.shell: >
-    /usr/bin/grep -l -s -E '^\*\.\*\s+action\(type="omfwd"' {{ rsyslog_conf_path }} {{ rsyslogd_path }}/*.conf
-  register: rsyslog_forward_out
-  changed_when: false
-  failed_when: rsyslog_forward_out.rc == "2"
+#- name: Find any rsyslog files where all logs are being forwarded to a loghost
+#  ansible.builtin.shell: >
+#    /usr/bin/grep -l -s -E '^\*\.\*\s+action\(type="omfwd"' {{ rsyslog_conf_path }} {{ rsyslogd_path }}/*.conf
+#  register: rsyslog_forward_out
+#  changed_when: false
+#  failed_when: rsyslog_forward_out.rc == "2"
 
 #- debug: var=rsyslog_forward_out
 
-- name: Forward journald logs to rsyslog IF rsyslog is sending logs to a log host
-  vars:
-    rsyslog_forwarding: "{{ rsyslog_forward_out.stdout | length > 0 }}"
-    str: "{{ 'yes' if rsyslog_forwarding else 'no' }}"
-  ansible.builtin.lineinfile:
-    dest: "{{ journald_conf_path }}"
-    regexp: "^#?ForwardToSyslog=.*$"
-    line: "ForwardToSyslog={{ str }}"
+#- name: Forward journald logs to rsyslog IF rsyslog is sending logs to a log host
+#  vars:
+#    rsyslog_forwarding: "{{ rsyslog_forward_out.stdout | length > 0 }}"
+#    str: "{{ 'yes' if rsyslog_forwarding else 'no' }}"
+#  ansible.builtin.lineinfile:
+#    dest: "{{ journald_conf_path }}"
+#    regexp: "^#?ForwardToSyslog=.*$"
+#    line: "ForwardToSyslog={{ str }}"
 
-- name: Ensure journald compresses large files
-  vars:
-    str: "{{ 'yes' if (journald_compress | default(true)) else 'no' }}"
-  ansible.builtin.lineinfile:
-    dest: "{{ journald_conf_path }}"
-    regexp: "^#?Compress=.*$"
-    line: "Compress={{ str }}"
-
-- name: Ensure journald writes to peristent disk
-  ansible.builtin.lineinfile:
-    dest: "{{ journald_conf_path }}"
-    regexp: "^#?Storage=.*$"
-    line: "Storage=persistent"
+- name: Write journald configuration file
+  ansible.builtin.template:
+    src: journald.conf.j2
+    dest: "{{ journald_confd_directory }}/{{ journald_confd_filename }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart systemd-journald service

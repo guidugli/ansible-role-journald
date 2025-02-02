@@ -6,3 +6,15 @@
 
 - name: Include journald.yml
   ansible.builtin.include_tasks: journald.yml
+
+- name: Include journald_remote.yml
+  ansible.builtin.include_tasks: journald_remote.yml
+  when:
+    - journald_enable_remote_logging is defined
+    - journald_enable_remote_logging
+
+- name: Include disable_rsyslog.yml
+  ansible.builtin.include_tasks: disable_rsyslog.yml
+  when:
+    - journald_disable_rsyslog is defined
+    - journald_disable_rsyslog

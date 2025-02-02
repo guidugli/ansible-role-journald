@@ -5,3 +5,16 @@ rsyslog_conf_path: /etc/rsyslog.conf
 rsyslogd_path: /etc/rsyslog.d
 
 journald_conf_path: /etc/systemd/journald.conf
+journald_confd_directory: /etc/systemd/journald.conf.d
+journald_confd_filename: 01-ansible.conf
+
+journald_storage: persistent
+
+journald_remote_pkg: systemd-journal-remote
+journald_upload_service: systemd-journal-upload.service
+
+journald_upload_confd_path: /etc/systemd/journal-upload.conf.d
+journald_upload_conf_file: 01-ansible.conf
+
+journald_remote_socket: systemd-journal-remote.socket
+journald_remote_service: systemd-journal-remote.service

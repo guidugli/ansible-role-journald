@@ -5,4 +5,10 @@
     that:
       - journald_compress is defined
       - journald_compress | type_debug == 'bool'
+      - journald_forward_to_syslog is defined
+      - journald_forward_to_syslog | type_debug == 'bool'
+      - journald_enable_remote_logging is defined
+      - journald_enable_remote_logging | type_debug == 'bool'
+      - journald_disable_rsyslog is defined
+      - journald_disable_rsyslog | type_debug == 'bool'  
     quiet: yes

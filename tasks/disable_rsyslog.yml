@@ -1,0 +1,20 @@
+---
+
+- name: Get the list of services
+  service_facts:
+
+- name: Disable rsyslog socket
+  ansible.builtin.systemd_service:
+    name: rsyslog.socket
+    state: stopped
+    enabled: false
+    masked: true
+  when: "'rsyslog.socket' in services"
+
+- name: Disable rsyslog service
+  ansible.builtin.systemd_service:
+    name: rsyslog.service
+    state: stopped
+    enabled: false
+    masked: true
+  when: "'rsyslog.service' in services"

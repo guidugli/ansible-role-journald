@@ -1,2 +1,14 @@
 ---
 # handlers file for journald
+
+- name: Restart systemd-journald service
+  ansible.builtin.systemd_service:
+    name: systemd-journald.service
+    state: restarted
+    enabled: yes
+
+- name: Restart systemd-journald-upload service
+  ansible.builtin.systemd_service:
+    name: "{{ journald_upload_service }}"
+    state: restarted
+    enabled: yes
