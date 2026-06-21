@@ -1,5 +1,140 @@
 ---
-- name: Verify audit role
+- name: Verify journald role
   hosts: all
   gather_facts: true
+  vars_files:
+    - ../../defaults/main.yml
+    - ../../vars/main.yml
+  vars:
+    journald_dropin_path: "{{ journald_confd_directory }}/{{ journald_confd_filename }}"
+    journald_upload_dropin_path: "{{ journald_upload_confd_path }}/{{ journald_upload_conf_file }}"
   tasks:
+    - name: Check journald drop-in presence
+      ansible.builtin.stat:
+        path: "{{ journald_dropin_path }}"
+      register: journald_dropin_stat
+      tags:
+        - journald
+        - validate
+
+    - name: Assert journald drop-in exists
+      ansible.builtin.assert:
+        that:
+          - journald_dropin_stat.stat.exists
+          - journald_dropin_stat.stat.isreg
+        quiet: true
+      tags:
+        - journald
+        - validate
+
+    - name: Read journald drop-in
+      ansible.builtin.slurp:
+        src: "{{ journald_dropin_path }}"
+      register: journald_dropin_content
+      tags:
+        - journald
+        - validate
+
+    - name: Decode journald drop-in content
+      ansible.builtin.set_fact:
+        journald_dropin_text: "{{ journald_dropin_content.content | b64decode }}"
+      changed_when: false
+      tags:
+        - journald
+        - validate
+
+    - name: Assert rendered journald options
+      ansible.builtin.assert:
+        that:
+          - "'Storage=' ~ journald_storage in journald_dropin_text"
+          - "'Compress=' ~ (journald_compress | ternary('yes', 'no')) in journald_dropin_text"
+          - "'SystemMaxUse=' ~ journald_system_max_use in journald_dropin_text"
+          - "'SystemKeepFree=' ~ journald_system_keep_free in journald_dropin_text"
+          - "'RuntimeMaxUse=' ~ journald_runtime_max_use in journald_dropin_text"
+          - "'RuntimeKeepFree=' ~ journald_runtime_keep_free in journald_dropin_text"
+          - "'MaxFileSec=' ~ journal_max_file_sec in journald_dropin_text"
+          - "'ForwardToSyslog=' ~ (journald_forward_to_syslog | ternary('yes', 'no')) in journald_dropin_text"
+        quiet: true
+      tags:
+        - journald
+        - validate
+
+    - name: Collect service facts on systemd hosts
+      ansible.builtin.service_facts:
+      when: ansible_facts['service_mgr'] == 'systemd'
+      tags:
+        - journald
+        - validate
+
+    - name: Assert systemd-journald service is discoverable
+      ansible.builtin.assert:
+        that:
+          - "'systemd-journald.service' in ansible_facts.services"
+        quiet: true
+      when: ansible_facts['service_mgr'] == 'systemd'
+      tags:
+        - journald
+        - validate
+
+    - name: Check journald upload drop-in presence
+      ansible.builtin.stat:
+        path: "{{ journald_upload_dropin_path }}"
+      register: journald_upload_dropin_stat
+      when: journald_enable_remote_logging | bool
+      tags:
+        - journald
+        - validate
+
+    - name: Assert journald upload drop-in exists
+      ansible.builtin.assert:
+        that:
+          - journald_upload_dropin_stat.stat.exists
+          - journald_upload_dropin_stat.stat.isreg
+        quiet: true
+      when: journald_enable_remote_logging | bool
+      tags:
+        - journald
+        - validate
+
+    - name: Read journald upload drop-in
+      ansible.builtin.slurp:
+        src: "{{ journald_upload_dropin_path }}"
+      register: journald_upload_dropin_content
+      when: journald_enable_remote_logging | bool
+      tags:
+        - journald
+        - validate
+
+    - name: Decode journald upload drop-in content
+      ansible.builtin.set_fact:
+        journald_upload_dropin_text: "{{ journald_upload_dropin_content.content | b64decode }}"
+      changed_when: false
+      when: journald_enable_remote_logging | bool
+      tags:
+        - journald
+        - validate
+
+    - name: Assert rendered journald upload options
+      ansible.builtin.assert:
+        that:
+          - "'URL=' ~ journald_remote_url in journald_upload_dropin_text"
+          - "'ServerKeyFile=' ~ journald_remote_server_key_file in journald_upload_dropin_text"
+          - "'ServerCertificateFile=' ~ journald_remote_server_cert_file in journald_upload_dropin_text"
+          - "'TrustedCertificateFile=' ~ journald_trusted_cert_file in journald_upload_dropin_text"
+        quiet: true
+      when: journald_enable_remote_logging | bool
+      tags:
+        - journald
+        - validate
+
+    - name: Assert journald upload service is discoverable on systemd hosts
+      ansible.builtin.assert:
+        that:
+          - "journald_upload_service in ansible_facts.services"
+        quiet: true
+      when:
+        - journald_enable_remote_logging | bool
+        - ansible_facts['service_mgr'] == 'systemd'
+      tags:
+        - journald
+        - validate

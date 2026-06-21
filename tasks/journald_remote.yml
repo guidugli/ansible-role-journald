@@ -1,5 +1,4 @@
 ---
-
 - name: Get the list of services
   ansible.builtin.service_facts:
 
@@ -41,4 +40,4 @@
   loop:
     - "{{ journald_remote_socket }}"
     - "{{ journald_remote_service }}"
-  when: item in services
+  when: "item in ansible_facts['services']"

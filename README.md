@@ -1,113 +1,83 @@
-Ansible Role: journald
-=========
+[![CI](https://github.com/guidugli/ansible-role-journald/actions/workflows/CI.yml/badge.svg)](https://github.com/guidugli/ansible-role-journald/actions/workflows/CI.yml)
+[![Release](https://img.shields.io/github/v/tag/guidugli/ansible-role-journald?sort=semver)](https://github.com/guidugli/ansible-role-journald/tags)
+[![Galaxy](https://img.shields.io/badge/ansible--galaxy-guidugli.journald-blue.svg)](https://galaxy.ansible.com/ui/standalone/namespaces/2679/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/guidugli/ansible-role-journald/blob/main/LICENSE)
 
-An Ansible Role that install and configure journald Fedora and Debian/Ubuntu following CIS recommendation (default variable values). 
+# Ansible Role: journald
 
-Requirements
-------------
+Install and configure `systemd-journald` on Linux hosts, including optional remote upload support and defaults aligned with CIS-oriented journald sizing and forwarding guidance.
 
-No requirements.
+## Requirements
 
-Role Variables
---------------
+- No runtime role dependencies are required.
+- For local validation and Molecule testing, install the development dependencies from `requirements-dev.txt` and the collections from `requirements.yml`.
+- The current Molecule matrix in this role covers Ubuntu `26.04` and `24.04`, Debian `13` and `12`, and Fedora `44` and `43`.
 
-**Available variables are listed below, along with default values (see defaults/main.yml):**
+## Variables
 
-    journald_compress: yes
+The role exposes the following primary input variables in `defaults/main.yml`:
 
-Specify if journald should compress large files.
+- `journald_compress: true`
+- `journald_system_max_use: 1G`
+- `journald_system_keep_free: 500M`
+- `journald_runtime_max_use: 200M`
+- `journald_runtime_keep_free: 50M`
+- `journal_max_file_sec: 1month`
+- `journald_forward_to_syslog: false`
+- `journald_enable_remote_logging: false`
+- `journald_remote_url: 192.168.1.1`
+- `journald_remote_server_key_file: /etc/ssl/private/journal-upload.pem`
+- `journald_remote_server_cert_file: /etc/ssl/certs/journal-upload.pem`
+- `journald_trusted_cert_file: /etc/ssl/ca/trusted.pem`
+- `journald_disable_rsyslog: true`
 
-    journald_system_max_use: 1G
-    journald_system_keep_free:  500M
-    #journald_system_max_file_size: 100M
-    #journald_system_max_files: 100
-    journald_runtime_max_use: 200M
-    journald_runtime_keep_free: 50M
-    #journald_runtime_max_file_size: 50M
-    #journald_runtime_max_files: 100
-    journal_max_file_sec: 1month
+The role also uses targeted system variables from `vars/main.yml`:
 
-These variables enforce size limits on the journal files stored.
+- `rsyslog_conf_path: /etc/rsyslog.conf`
+- `rsyslogd_path: /etc/rsyslog.d`
+- `journald_conf_path: /etc/systemd/journald.conf`
+- `journald_confd_directory: /etc/systemd/journald.conf.d`
+- `journald_confd_filename: 01-ansible.conf`
+- `journald_storage: persistent`
+- `journald_remote_pkg: systemd-journal-remote`
+- `journald_upload_service: systemd-journal-upload.service`
+- `journald_upload_confd_path: /etc/systemd/journal-upload.conf.d`
+- `journald_upload_conf_file: 01-ansible.conf`
+- `journald_remote_socket: systemd-journal-remote.socket`
+- `journald_remote_service: systemd-journal-remote.service`
 
-    journald_forward_to_syslog: false
+Additional optional journald settings are already scaffolded in `defaults/main.yml` as commented variables for rate limits, retention, log levels, audit, and other native `journald.conf` settings.
 
-Enable or disable sending events to syslog. Recommended to use only journald or syslog, not both.
+## Example playbook
 
-    journald_enable_remote_logging: false
-    #journald_remote_url: 192.168.x.x
-    journald_remote_server_key_file: /etc/ssl/private/journal-upload.pem
-    journald_remote_server_cert_file: /etc/ssl/certs/journal-upload.pem
-    journald_trusted_cert_file: /etc/ssl/ca/trusted.pem
+```yaml
+---
+- name: Configure journald
+  hosts: servers
+  become: true
+  roles:
+    - role: guidugli.journald
+      vars:
+        journald_enable_remote_logging: false
+        journald_disable_rsyslog: true
+```
 
-Configure remote logging. Recommended to enable remote logging. It is disabled by default because it needs remote
-host and certs configured.
+## Molecule testing
 
-    journald_disable_rsyslog: true
+Use the shared Molecule scenarios that are already present in the role:
 
-This will disable syslog on the system.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+ansible-galaxy collection install -r requirements.yml
+molecule test -s default
+molecule test -s systemd
+```
 
-    #journald_seal: true
-    #journald_split_mode: uid
-    #journald_sync_interval_sec: 5m
-    #journald_rate_limit_interval_sec: 30s
-    #journald_rate_limit_burst: 10000
-    #journald_max_retention_sec: 12month
-    #journald_sync_interval_sec: 5m
-    #journald_forward_to_console: false
-    #journald_forward_to_kmsg: false
-    #journald_forware_to_wall: true
-    #journald_max_level_store: debug
-    #journald_max_level_syslog: debug
-    #journald_max_level_kmsg: notce
-    #journald_max_level_console: info
-    #journald_max_level_wall: emerg
-    #journald_read_kmsg: true
-    #journald_audit: true
-    #journald_tty_path: /dev/console
-    #journald_line_max: 48K
- 
-Miscelaneous options. Check journald.conf man page for more details.
+The `default` scenario exercises the shared converge and verify playbooks against the standard Podman container matrix. The `systemd` scenario prepares containers with `systemd`, commits them into local images, and recreates them with a detected systemd entrypoint so service-management tasks can be exercised in a systemd-capable environment.
 
-**The variables listed below do not need to be changed for targeted systems (see vars/main.yml):**
+## Execution notes
 
-    rsyslog_conf_path: /etc/rsyslog.conf
-
-rsyslog configuration path.
-
-    rsyslogd_path: /etc/rsyslog.d
-
-rsyslog configuration directory.
-
-    journald_conf_path: /etc/systemd/journald.conf
-
-journald configuration path.
-
-    journald_confd_directory: /etc/systemd/journald.conf.d
-
-journald.conf.d path.
-
-    journald_confd_filename: 01-ansible.conf
-
-Name of the configuration file to be created under journald.conf.d.
-
-Dependencies
-------------
-
-No dependencies.
-
-Example Playbook
-----------------
-
-    - hosts: servers
-      roles:
-         - { role: guidugli.journald }
-
-License
--------
-
-MIT / BSD
-
-Author Information
-------------------
-
-This role was created in 2020 by Carlos Guidugli.
+- **Privilege model:** this role does not enforce privilege escalation internally. Run the role with external privilege (for example `become: true` in real host playbooks) because it writes configuration under `/etc/systemd/`, can install `systemd-journal-remote`, manages `systemd-journald.service` and `systemd-journal-upload.service`, and can stop or mask `rsyslog.socket` and `rsyslog.service`.
+- **Container and systemd behavior:** the role manages systemd services and systemd-owned configuration paths. The dedicated `molecule/systemd` scenario exists specifically for that execution context. On non-systemd targets or minimal containers without a service manager, service-management tasks should be expected to require environment-specific handling.

@@ -1,0 +1,161 @@
+---
+argument_specs:
+  main:
+    short_description: Configure systemd-journald and optional remote upload integration.
+    description:
+      - Install and configure journald settings using a drop-in file and optional
+        systemd-journal-upload integration.
+    options:
+      journald_compress:
+        type: bool
+        default: true
+        description:
+          - Whether journald should compress large journal files.
+      journald_system_max_use:
+        type: str
+        default: 1G
+        description:
+          - Maximum disk space that persistent journals may use.
+      journald_system_keep_free:
+        type: str
+        default: 500M
+        description:
+          - Disk space that should remain free for persistent journals.
+      journald_runtime_max_use:
+        type: str
+        default: 200M
+        description:
+          - Maximum disk space that runtime journals may use.
+      journald_runtime_keep_free:
+        type: str
+        default: 50M
+        description:
+          - Disk space that should remain free for runtime journals.
+      journal_max_file_sec:
+        type: str
+        default: 1month
+        description:
+          - Maximum time to store entries in an individual journal file.
+      journald_forward_to_syslog:
+        type: bool
+        default: false
+        description:
+          - Whether journald should forward events to syslog.
+      journald_enable_remote_logging:
+        type: bool
+        default: false
+        description:
+          - Whether systemd-journal-upload support should be configured.
+      journald_remote_url:
+        type: str
+        default: 192.168.1.1
+        description:
+          - Remote upload destination URL or host placeholder.
+      journald_remote_server_key_file:
+        type: path
+        default: /etc/ssl/private/journal-upload.pem
+        description:
+          - Path to the private key used by systemd-journal-upload.
+      journald_remote_server_cert_file:
+        type: path
+        default: /etc/ssl/certs/journal-upload.pem
+        description:
+          - Path to the certificate used by systemd-journal-upload.
+      journald_trusted_cert_file:
+        type: path
+        default: /etc/ssl/ca/trusted.pem
+        description:
+          - Path to the trusted CA certificate used by systemd-journal-upload.
+      journald_disable_rsyslog:
+        type: bool
+        default: true
+        description:
+          - Whether rsyslog services should be disabled to avoid duplicate logging.
+      journald_seal:
+        type: bool
+        description:
+          - Whether to enable journal sealing.
+      journald_split_mode:
+        type: str
+        description:
+          - Value for SplitMode in journald.conf.
+      journald_sync_interval_sec:
+        type: str
+        description:
+          - Value for SyncIntervalSec in journald.conf.
+      journald_rate_limit_interval_sec:
+        type: str
+        description:
+          - Value for RateLimitIntervalSec in journald.conf.
+      journald_rate_limit_burst:
+        type: int
+        description:
+          - Value for RateLimitBurst in journald.conf.
+      journald_system_max_file_size:
+        type: str
+        description:
+          - Value for SystemMaxFileSize in journald.conf.
+      journald_system_max_files:
+        type: int
+        description:
+          - Value for SystemMaxFiles in journald.conf.
+      journald_max_retention_sec:
+        type: str
+        description:
+          - Value for MaxRetentionSec in journald.conf.
+      journald_runtime_max_file_size:
+        type: str
+        description:
+          - Value for RuntimeMaxFileSize in journald.conf.
+      journald_runtime_max_files:
+        type: int
+        description:
+          - Value for RuntimeMaxFiles in journald.conf.
+      journald_forward_to_console:
+        type: bool
+        description:
+          - Whether journald should forward entries to the console.
+      journald_forward_to_kmsg:
+        type: bool
+        description:
+          - Whether journald should forward entries to the kernel log buffer.
+      journald_forward_to_wall:
+        type: bool
+        description:
+          - Whether journald should forward entries to wall.
+      journald_tty_path:
+        type: path
+        description:
+          - Console device path used with ForwardToConsole.
+      journald_max_level_store:
+        type: str
+        description:
+          - Maximum log level that journald should store.
+      journald_max_level_syslog:
+        type: str
+        description:
+          - Maximum log level that journald should forward to syslog.
+      journald_max_level_kmsg:
+        type: str
+        description:
+          - Maximum log level that journald should forward to kmsg.
+      journald_max_level_console:
+        type: str
+        description:
+          - Maximum log level that journald should forward to the console.
+      journald_max_level_wall:
+        type: str
+        description:
+          - Maximum log level that journald should forward to wall.
+      journald_read_kmsg:
+        type: bool
+        description:
+          - Whether journald should read from the kernel log buffer.
+      journald_audit:
+        type: bool
+        description:
+          - Whether journald should process audit messages.
+      journald_line_max:
+        type: str
+        description:
+          - Maximum line size accepted by journald.
