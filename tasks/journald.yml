@@ -7,12 +7,12 @@
     enabled: true
     masked: false
 
-#- name: Check if journald exists
+# - name: Check if journald exists
 #  ansible.builtin.stat:
 #    path: "{{ journald_conf_path }}"
 #  register: stat_cmd
 
-#- name: Copy from /usr/lib/systemd/journald.conf if does not exist
+# - name: Copy from /usr/lib/systemd/journald.conf if does not exist
 #  ansible.builtin.copy:
 #    src: /usr/lib/systemd/journald.conf
 #    dest: "{{ journald_conf_path }}"
@@ -28,18 +28,18 @@
     state: directory
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
 
-#- name: Find any rsyslog files where all logs are being forwarded to a loghost
+# - name: Find any rsyslog files where all logs are being forwarded to a loghost
 #  ansible.builtin.shell: >
 #    /usr/bin/grep -l -s -E '^\*\.\*\s+action\(type="omfwd"' {{ rsyslog_conf_path }} {{ rsyslogd_path }}/*.conf
 #  register: rsyslog_forward_out
 #  changed_when: false
 #  failed_when: rsyslog_forward_out.rc == "2"
 
-#- debug: var=rsyslog_forward_out
+# - debug: var=rsyslog_forward_out
 
-#- name: Forward journald logs to rsyslog IF rsyslog is sending logs to a log host
+# - name: Forward journald logs to rsyslog IF rsyslog is sending logs to a log host
 #  vars:
 #    rsyslog_forwarding: "{{ rsyslog_forward_out.stdout | length > 0 }}"
 #    str: "{{ 'yes' if rsyslog_forwarding else 'no' }}"
