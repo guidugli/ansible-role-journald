@@ -69,7 +69,7 @@
     - name: Assert systemd-journald service is discoverable
       ansible.builtin.assert:
         that:
-          - "'systemd-journald.service' in ansible_facts.services"
+          - "'systemd-journald.service' in ansible_facts['services']"
         quiet: true
       when: ansible_facts['service_mgr'] == 'systemd'
       tags:
@@ -130,7 +130,7 @@
     - name: Assert journald upload service is discoverable on systemd hosts
       ansible.builtin.assert:
         that:
-          - "journald_upload_service in ansible_facts.services"
+          - "journald_upload_service in ansible_facts['services']"
         quiet: true
       when:
         - journald_enable_remote_logging | bool

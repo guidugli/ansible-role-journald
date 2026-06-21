@@ -1,23 +1,31 @@
 ---
 # tasks file for journald
+- name: Include assert tasks
+  ansible.builtin.include_tasks: assert.yml
+  tags:
+    - journald
+    - validate
 
-- name: Execute role tasks
-  block:
+- name: Include journald configuration tasks
+  ansible.builtin.include_tasks: journald.yml
+  tags:
+    - journald
+    - config
 
-    - name: Include assert.yml
-      ansible.builtin.include_tasks: assert.yml
+- name: Include journald remote tasks
+  ansible.builtin.include_tasks: journald_remote.yml
+  when:
+    - journald_enable_remote_logging is defined
+    - journald_enable_remote_logging
+  tags:
+    - journald
+    - service
 
-    - name: Include journald.yml
-      ansible.builtin.include_tasks: journald.yml
-
-    - name: Include journald_remote.yml
-      ansible.builtin.include_tasks: journald_remote.yml
-      when:
-        - journald_enable_remote_logging is defined
-        - journald_enable_remote_logging
-
-    - name: Include disable_rsyslog.yml
-      ansible.builtin.include_tasks: disable_rsyslog.yml
-      when:
-        - journald_disable_rsyslog is defined
-        - journald_disable_rsyslog
+- name: Include disable rsyslog tasks
+  ansible.builtin.include_tasks: disable_rsyslog.yml
+  when:
+    - journald_disable_rsyslog is defined
+    - journald_disable_rsyslog
+  tags:
+    - journald
+    - service

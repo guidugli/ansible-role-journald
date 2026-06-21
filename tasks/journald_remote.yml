@@ -1,6 +1,9 @@
 ---
 - name: Get the list of services
   ansible.builtin.service_facts:
+  tags:
+    - journald
+    - validate
 
 - name: Create journald-upload.conf.d directory if it does not exist
   ansible.builtin.file:
@@ -9,19 +12,28 @@
     owner: root
     group: root
     mode: "0755"
+  tags:
+    - journald
+    - config
 
 - name: Install systemd-journald-remote if not already installed
   ansible.builtin.package:
     name: "{{ journald_remote_pkg }}"
     state: present
-    update_cache: yes
+    update_cache: true
+  tags:
+    - journald
+    - install
 
 - name: Enable systemd-journald-remote service
   ansible.builtin.service:
     name: "{{ journald_upload_service }}"
-    enabled: yes
+    enabled: true
     state: started
-    masked: no
+    masked: false
+  tags:
+    - journald
+    - service
 
 - name: Write journald-upload configuration file
   ansible.builtin.template:
@@ -31,13 +43,19 @@
     group: root
     mode: '0644'
   notify: Restart systemd-journald-upload service
+  tags:
+    - journald
+    - config
 
 - name: Disable systemd-journal-remote to prevent receiving messages
   ansible.builtin.service:
     name: "{{ item }}"
-    enabled: no
+    enabled: false
     state: stopped
   loop:
     - "{{ journald_remote_socket }}"
     - "{{ journald_remote_service }}"
   when: "item in ansible_facts['services']"
+  tags:
+    - journald
+    - service

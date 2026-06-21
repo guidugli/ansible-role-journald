@@ -6,9 +6,15 @@
     name: systemd-journald.service
     state: restarted
     enabled: yes
+  tags:
+    - journald
+    - service
 
 - name: Restart systemd-journald-upload service
   ansible.builtin.systemd_service:
     name: "{{ journald_upload_service }}"
     state: restarted
     enabled: yes
+  tags:
+    - journald
+    - service

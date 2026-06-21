@@ -46,7 +46,7 @@ The role also uses targeted system variables from `vars/main.yml`:
 - `journald_remote_socket: systemd-journal-remote.socket`
 - `journald_remote_service: systemd-journal-remote.service`
 
-Additional optional journald settings are already scaffolded in `defaults/main.yml` as commented variables for rate limits, retention, log levels, audit, and other native `journald.conf` settings.
+Additional optional journald settings are scaffolded in `defaults/main.yml` as commented variables for rate limits, retention, log levels, audit, and other native `journald.conf` settings.
 
 ## Example playbook
 
@@ -80,4 +80,4 @@ The `default` scenario exercises the shared converge and verify playbooks agains
 ## Execution notes
 
 - **Privilege model:** this role does not enforce privilege escalation internally. Run the role with external privilege (for example `become: true` in real host playbooks) because it writes configuration under `/etc/systemd/`, can install `systemd-journal-remote`, manages `systemd-journald.service` and `systemd-journal-upload.service`, and can stop or mask `rsyslog.socket` and `rsyslog.service`.
-- **Container and systemd behavior:** the role manages systemd services and systemd-owned configuration paths. The dedicated `molecule/systemd` scenario exists specifically for that execution context. On non-systemd targets or minimal containers without a service manager, service-management tasks should be expected to require environment-specific handling.
+- **Container and systemd behavior:** this role manages systemd services and systemd-owned configuration paths. The dedicated `molecule/systemd` scenario exists specifically for that execution context. On non-systemd targets or minimal containers without a service manager, service-management tasks should be expected to require environment-specific handling.

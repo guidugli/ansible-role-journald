@@ -11,4 +11,7 @@
       - journald_enable_remote_logging | type_debug == 'bool'
       - journald_disable_rsyslog is defined
       - journald_disable_rsyslog | type_debug == 'bool'
-    quiet: yes
+    quiet: true
+  tags:
+    - journald
+    - validate
