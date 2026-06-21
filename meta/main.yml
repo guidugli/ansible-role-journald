@@ -1,3 +1,4 @@
+---
 ## Generated file. Do not edit directly.
 
 ## Source template: meta_main.yml.j2
@@ -15,17 +16,17 @@ galaxy_info:
   license: MIT
   min_ansible_version: '2.14'
   platforms:
-  - name: Fedora
-    versions:
-      - "all"
-  - name: Ubuntu
-    versions:
-      - "resolute"
-      - "noble"
-  - name: Debian
-    versions:
-      - "trixie"
-      - "bookworm"
+    - name: Fedora
+      versions:
+        - "all"
+    - name: Ubuntu
+      versions:
+        - "resolute"
+        - "noble"
+    - name: Debian
+      versions:
+        - "trixie"
+        - "bookworm"
   galaxy_tags:
     - journald
     - systemd

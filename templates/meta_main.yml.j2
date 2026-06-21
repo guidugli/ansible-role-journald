@@ -1,3 +1,4 @@
+---
 ## Generated file. Do not edit directly.
 
 ## Source template: {{ template_name }}
@@ -16,10 +17,10 @@ galaxy_info:
   min_ansible_version: '2.14'
   platforms:
 {% for platform in platforms %}
-  - name: {{ platform.name }}
-    versions:
+    - name: {{ platform.name }}
+      versions:
 {%   for version in platform.versions %}
-      - {{ version | tojson }}
+        - {{ version | tojson }}
 {%   endfor %}
 {% endfor %}
   galaxy_tags:
