@@ -16,7 +16,8 @@
   ansible.builtin.include_tasks: journald_remote.yml
   when:
     - journald_enable_remote_logging is defined
-    - journald_enable_remote_logging
+    - journald_enable_remote_logging | bool
+    - ansible_facts['service_mgr'] == 'systemd'
   tags:
     - journald
     - service

@@ -5,7 +5,8 @@
   ansible.builtin.systemd_service:
     name: systemd-journald.service
     state: restarted
-    enabled: yes
+    enabled: true
+  when: ansible_facts['service_mgr'] == 'systemd'
   tags:
     - journald
     - service
@@ -14,7 +15,8 @@
   ansible.builtin.systemd_service:
     name: "{{ journald_upload_service }}"
     state: restarted
-    enabled: yes
+    enabled: true
+  when: ansible_facts['service_mgr'] == 'systemd'
   tags:
     - journald
     - service

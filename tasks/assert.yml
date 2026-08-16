@@ -1,14 +1,31 @@
 ---
-
-- name: Validate if variables have valid values
+- name: Validate role input variables
   ansible.builtin.assert:
     that:
       - journald_compress is defined
       - journald_compress | type_debug == 'bool'
+      - journald_system_max_use is defined
+      - journald_system_max_use | type_debug == 'str'
+      - journald_system_keep_free is defined
+      - journald_system_keep_free | type_debug == 'str'
+      - journald_runtime_max_use is defined
+      - journald_runtime_max_use | type_debug == 'str'
+      - journald_runtime_keep_free is defined
+      - journald_runtime_keep_free | type_debug == 'str'
+      - journal_max_file_sec is defined
+      - journal_max_file_sec | type_debug == 'str'
       - journald_forward_to_syslog is defined
       - journald_forward_to_syslog | type_debug == 'bool'
       - journald_enable_remote_logging is defined
       - journald_enable_remote_logging | type_debug == 'bool'
+      - journald_remote_url is defined
+      - journald_remote_url | type_debug == 'str'
+      - journald_remote_server_key_file is defined
+      - journald_remote_server_key_file | type_debug == 'str'
+      - journald_remote_server_cert_file is defined
+      - journald_remote_server_cert_file | type_debug == 'str'
+      - journald_trusted_cert_file is defined
+      - journald_trusted_cert_file | type_debug == 'str'
       - journald_disable_rsyslog is defined
       - journald_disable_rsyslog | type_debug == 'bool'
     quiet: true

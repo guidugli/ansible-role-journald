@@ -1,6 +1,7 @@
 ---
 - name: Get the list of services
   ansible.builtin.service_facts:
+  when: ansible_facts['service_mgr'] == 'systemd'
   tags:
     - journald
     - validate
@@ -16,21 +17,30 @@
     - journald
     - config
 
-- name: Install systemd-journald-remote if not already installed
-  ansible.builtin.package:
-    name: "{{ journald_remote_pkg }}"
-    state: present
+- name: Refresh apt package cache for journald remote package
+  ansible.builtin.apt:
     update_cache: true
+    cache_valid_time: 3600
+  when: ansible_facts['os_family'] == 'Debian'
   tags:
     - journald
     - install
 
-- name: Enable systemd-journald-remote service
-  ansible.builtin.service:
+- name: Install systemd-journal-remote package
+  ansible.builtin.package:
+    name: "{{ journald_remote_pkg }}"
+    state: present
+  tags:
+    - journald
+    - install
+
+- name: Enable systemd-journal-upload service
+  ansible.builtin.systemd_service:
     name: "{{ journald_upload_service }}"
     enabled: true
     state: started
     masked: false
+  when: ansible_facts['service_mgr'] == 'systemd'
   tags:
     - journald
     - service
@@ -41,21 +51,23 @@
     dest: "{{ journald_upload_confd_path }}/{{ journald_upload_conf_file }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Restart systemd-journald-upload service
   tags:
     - journald
     - config
 
-- name: Disable systemd-journal-remote to prevent receiving messages
-  ansible.builtin.service:
+- name: Disable systemd-journal-remote receiver units
+  ansible.builtin.systemd_service:
     name: "{{ item }}"
     enabled: false
     state: stopped
   loop:
     - "{{ journald_remote_socket }}"
     - "{{ journald_remote_service }}"
-  when: "item in ansible_facts['services']"
+  when:
+    - ansible_facts['service_mgr'] == 'systemd'
+    - item in ansible_facts['services']
   tags:
     - journald
     - service

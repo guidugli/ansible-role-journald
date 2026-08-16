@@ -1,6 +1,7 @@
 ---
 - name: Get the list of services
   ansible.builtin.service_facts:
+  when: ansible_facts['service_mgr'] == 'systemd'
   tags:
     - journald
     - validate
@@ -11,7 +12,9 @@
     state: stopped
     enabled: false
     masked: true
-  when: "'rsyslog.socket' in ansible_facts['services']"
+  when:
+    - ansible_facts['service_mgr'] == 'systemd'
+    - "'rsyslog.socket' in ansible_facts['services']"
   tags:
     - journald
     - service
@@ -22,7 +25,9 @@
     state: stopped
     enabled: false
     masked: true
-  when: "'rsyslog.service' in ansible_facts['services']"
+  when:
+    - ansible_facts['service_mgr'] == 'systemd'
+    - "'rsyslog.service' in ansible_facts['services']"
   tags:
     - journald
     - service

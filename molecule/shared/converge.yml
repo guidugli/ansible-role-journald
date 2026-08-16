@@ -2,8 +2,8 @@
 - name: Converge
   hosts: all
   gather_facts: true
-  become: false
   vars:
-    journald_enable_remote_logging: true
+    journald_enable_remote_logging: >-
+      {{ ansible_facts['service_mgr'] == 'systemd' and ansible_facts['os_family'] == 'RedHat' }}
   roles:
     - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}"

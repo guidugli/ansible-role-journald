@@ -5,6 +5,7 @@
     state: started
     enabled: true
     masked: false
+  when: ansible_facts['service_mgr'] == 'systemd'
   tags:
     - journald
     - service
@@ -26,7 +27,7 @@
     dest: "{{ journald_confd_directory }}/{{ journald_confd_filename }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Restart systemd-journald service
   tags:
     - journald
