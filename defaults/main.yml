@@ -29,6 +29,16 @@ journald_trusted_cert_file: /etc/ssl/ca/trusted.pem
 # Disable rsyslog to avoid duplicating events
 journald_disable_rsyslog: true
 
+# Optional journald tmpfiles permission management
+# Disabled by default because CIS treats log file access as a manual, site-policy-dependent control.
+journald_manage_tmpfiles_permissions: false
+journald_tmpfiles_conf_path: /etc/tmpfiles.d/systemd.conf
+journald_tmpfiles_source_paths:
+  - /usr/lib/tmpfiles.d/systemd.conf
+  - /lib/tmpfiles.d/systemd.conf
+journald_tmpfiles_file_mode: "0640"
+journald_tmpfiles_require_source: false
+
 # Other options (see journald.conf man page for more information)
 
 # journald_seal: true

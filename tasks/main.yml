@@ -12,6 +12,15 @@
     - journald
     - config
 
+- name: Include journald tmpfiles permission tasks
+  ansible.builtin.include_tasks: tmpfiles.yml
+  when:
+    - journald_manage_tmpfiles_permissions is defined
+    - journald_manage_tmpfiles_permissions | bool
+  tags:
+    - journald
+    - config
+
 - name: Include journald remote tasks
   ansible.builtin.include_tasks: journald_remote.yml
   when:

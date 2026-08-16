@@ -23,6 +23,7 @@ jobs:
       matrix:
         scenario:
           - systemd
+          - default
 
     steps:
       - name: Check out the codebase

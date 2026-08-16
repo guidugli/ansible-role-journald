@@ -5,13 +5,13 @@
 
 # Ansible Role: journald
 
-Install and configure systemd-journald on Linux hosts. The role renders a managed `journald.conf.d` drop-in, can configure `systemd-journal-upload`, and can disable rsyslog units to avoid duplicate log forwarding.
+Install and configure systemd-journald on Linux hosts. The role renders a managed `journald.conf.d` drop-in, can configure `systemd-journal-upload`, masks receiver-side `systemd-journal-remote` units, and can optionally manage journald tmpfiles permissions.
 
 ## Requirements
 
 - Ansible Core 2.14 or newer according to the role metadata.
 - Linux targets using systemd for service-management tasks.
-- External privilege escalation for real hosts because the role writes under `/etc/systemd`, installs packages, and manages system services.
+- External privilege escalation for real hosts because the role writes under `/etc/systemd`, can write `/etc/tmpfiles.d`, installs packages, and manages system services.
 - `containers.podman` collection 1.10.0 or newer for Molecule container scenarios, as declared in `requirements.yml`.
 - Development dependencies from `requirements-dev.txt` for local linting and Molecule validation.
 
@@ -20,7 +20,9 @@ Install and configure systemd-journald on Linux hosts. The role renders a manage
 - Renders `/etc/systemd/journald.conf.d/01-ansible.conf` from role variables.
 - Supports persistent journald storage and configurable compression, retention, and disk usage limits.
 - Optionally installs and configures `systemd-journal-upload` for remote journal forwarding.
+- Stops, disables, and masks `systemd-journal-remote.socket` and `systemd-journal-remote.service` when remote upload is used.
 - Optionally stops, disables, and masks rsyslog units to prevent duplicate event collection.
+- Optionally manages a systemd tmpfiles override for journald log file permissions.
 - Uses systemd guards for service operations so non-systemd or minimal container contexts can skip service management safely.
 - Includes shared Molecule converge and verify logic used by both default and systemd scenarios.
 
@@ -47,6 +49,11 @@ All public defaults are defined in `defaults/main.yml` and mirrored in `meta/arg
 | `journald_remote_server_cert_file` | path | `/etc/ssl/certs/journal-upload.pem` | Certificate file path for `systemd-journal-upload`. |
 | `journald_trusted_cert_file` | path | `/etc/ssl/ca/trusted.pem` | Trusted CA certificate path for `systemd-journal-upload`. |
 | `journald_disable_rsyslog` | bool | `true` | Stops, disables, and masks rsyslog service/socket units when available on systemd hosts. |
+| `journald_manage_tmpfiles_permissions` | bool | `false` | Enables optional management of a systemd tmpfiles override for journald log file permissions. |
+| `journald_tmpfiles_conf_path` | path | `/etc/tmpfiles.d/systemd.conf` | Override file path used when tmpfiles permission management is enabled. |
+| `journald_tmpfiles_source_paths` | list | `['/usr/lib/tmpfiles.d/systemd.conf', '/lib/tmpfiles.d/systemd.conf']` | Candidate distribution tmpfiles defaults used to seed the managed override. |
+| `journald_tmpfiles_file_mode` | string | `0640` | Mode applied to type `f` tmpfiles entries in the managed override file. |
+| `journald_tmpfiles_require_source` | bool | `false` | Fail when tmpfiles permission management is enabled but none of the configured source files exists on the target. |
 
 Internal role variables in `vars/main.yml` define file paths, unit names, package names, and storage mode used by the tasks and templates. Override these only when adapting the role to a distribution-specific package or path layout.
 
@@ -81,6 +88,20 @@ Remote upload example:
         journald_trusted_cert_file: /etc/ssl/ca/trusted.pem
 ```
 
+Tmpfiles permission management example:
+
+```yaml
+---
+- name: Configure journald tmpfiles permissions
+  hosts: servers
+  become: true
+  roles:
+    - role: guidugli.journald
+      vars:
+        journald_manage_tmpfiles_permissions: true
+        journald_tmpfiles_file_mode: "0640"
+```
+
 ## Molecule testing instructions
 
 ```bash
@@ -96,12 +117,13 @@ The default scenario exercises shared converge and verify playbooks against the 
 
 ## Execution notes
 
-- **Privilege model:** the role never declares `become`, `become_user`, or `become_method`. Use `become: true` at the play, inventory, or automation-controller level for real hosts because the role writes `/etc/systemd` configuration, installs packages, and manages system services.
+- **Privilege model:** the role never declares `become`, `become_user`, or `become_method`. Use `become: true` externally for real hosts because the role writes `/etc/systemd` and `/etc/tmpfiles.d` configuration, installs packages, and manages system services.
 - **Container behavior:** Molecule scenario playbooks run with `become: false`; containers are expected to provide the required execution privileges externally.
 - **Systemd behavior:** service-management tasks and handlers are guarded with `ansible_facts['service_mgr'] == 'systemd'`. Configuration files are still rendered for targets where the paths are valid, but service starts, restarts, and rsyslog masking are skipped outside systemd.
-- **Idempotency:** configuration uses Ansible modules, deterministic templates, package `state: present`, and handlers so repeat runs should report no changes after convergence.
-- **Package cache behavior:** Debian and Ubuntu Molecule images clean apt lists during scenario preparation, so the role refreshes the apt cache before installing `systemd-journal-remote` when `ansible_facts['os_family'] == 'Debian'`.
 - **Remote upload behavior:** `systemd-journal-upload` is a systemd unit, so the role skips remote-upload tasks on non-systemd targets even when `journald_enable_remote_logging` is true. Molecule enables remote-upload coverage only for systemd-capable Fedora containers where the package is available from the base repositories.
+- **Package cache behavior:** Debian and Ubuntu Molecule images clean apt lists during scenario preparation, so the role refreshes the apt cache before installing `systemd-journal-remote` when `ansible_facts['os_family'] == 'Debian'`.
+- **Tmpfiles behavior:** tmpfiles permission management is disabled by default because CIS treats journald log file access as a manual, site-policy-dependent control. When enabled, the role looks for a systemd tmpfiles defaults file, seeds `/etc/tmpfiles.d/systemd.conf`, and normalizes type `f` entries to `journald_tmpfiles_file_mode`. Minimal/container images may not include a tmpfiles defaults file; in that case the role skips without change unless `journald_tmpfiles_require_source` is true.
+- **Idempotency:** configuration uses Ansible modules, deterministic templates, package `state: present`, and handlers so repeat runs should report no changes after convergence.
 
 ## Release workflow
 

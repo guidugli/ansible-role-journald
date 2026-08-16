@@ -1,0 +1,106 @@
+---
+- name: Locate systemd tmpfiles defaults
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: journald_tmpfiles_source_candidates
+  loop: "{{ journald_tmpfiles_source_paths }}"
+  tags:
+    - journald
+    - validate
+
+- name: Select systemd tmpfiles defaults source
+  ansible.builtin.set_fact:
+    journald_tmpfiles_source_path: >-
+      {{ (journald_tmpfiles_source_candidates.results
+          | selectattr('stat.exists')
+          | map(attribute='item')
+          | list
+          | first) | default('') }}
+  changed_when: false
+  tags:
+    - journald
+    - validate
+
+- name: Assert systemd tmpfiles defaults source exists when required
+  ansible.builtin.assert:
+    that:
+      - journald_tmpfiles_source_path | length > 0
+    fail_msg: >-
+      No systemd tmpfiles defaults file was found in journald_tmpfiles_source_paths.
+      Adjust journald_tmpfiles_source_paths for this platform or set
+      journald_tmpfiles_require_source to false for minimal/container images.
+    quiet: true
+  when: journald_tmpfiles_require_source | bool
+  tags:
+    - journald
+    - validate
+
+- name: Report skipped tmpfiles permission management when no source exists
+  ansible.builtin.debug:
+    msg: >-
+      Skipping journald tmpfiles permission management because none of the
+      configured source files exists on this target:
+      {{ journald_tmpfiles_source_paths | join(', ') }}.
+  when:
+    - journald_tmpfiles_source_path | length == 0
+    - not journald_tmpfiles_require_source | bool
+  changed_when: false
+  tags:
+    - journald
+    - validate
+
+- name: Ensure tmpfiles override directory exists
+  ansible.builtin.file:
+    path: "{{ journald_tmpfiles_conf_path | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: journald_tmpfiles_source_path | length > 0
+  tags:
+    - journald
+    - config
+
+- name: Seed systemd tmpfiles override from distribution defaults
+  ansible.builtin.copy:
+    src: "{{ journald_tmpfiles_source_path }}"
+    dest: "{{ journald_tmpfiles_conf_path }}"
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+  when: journald_tmpfiles_source_path | length > 0
+  tags:
+    - journald
+    - config
+
+- name: Configure tmpfiles file entries with compliant permissions
+  ansible.builtin.replace:
+    path: "{{ journald_tmpfiles_conf_path }}"
+    regexp: '^(\s*f\s+\S+\s+)0?[0-7]{3,4}(\s+.*)$'
+    replace: '\1{{ journald_tmpfiles_file_mode }}\2'
+  when: journald_tmpfiles_source_path | length > 0
+  tags:
+    - journald
+    - config
+
+- name: Check managed tmpfiles override file
+  ansible.builtin.stat:
+    path: "{{ journald_tmpfiles_conf_path }}"
+  register: journald_tmpfiles_override_stat
+  when: journald_tmpfiles_source_path | length > 0
+  tags:
+    - journald
+    - validate
+
+- name: Assert managed tmpfiles override file exists
+  ansible.builtin.assert:
+    that:
+      - journald_tmpfiles_override_stat.stat.exists
+      - journald_tmpfiles_override_stat.stat.isreg
+    quiet: true
+  when: journald_tmpfiles_source_path | length > 0
+  tags:
+    - journald
+    - validate

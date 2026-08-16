@@ -6,6 +6,8 @@
     - ../../defaults/main.yml
     - ../../vars/main.yml
   vars:
+    journald_enable_remote_logging: >-
+      {{ ansible_facts['service_mgr'] == 'systemd' and ansible_facts['os_family'] == 'RedHat' }}
     journald_dropin_path: "{{ journald_confd_directory }}/{{ journald_confd_filename }}"
     journald_upload_dropin_path: "{{ journald_upload_confd_path }}/{{ journald_upload_conf_file }}"
   tasks:
@@ -16,7 +18,6 @@
       tags:
         - journald
         - validate
-
     - name: Assert journald drop-in exists
       ansible.builtin.assert:
         that:
@@ -26,7 +27,6 @@
       tags:
         - journald
         - validate
-
     - name: Read journald drop-in
       ansible.builtin.slurp:
         src: "{{ journald_dropin_path }}"
@@ -34,7 +34,6 @@
       tags:
         - journald
         - validate
-
     - name: Decode journald drop-in content
       ansible.builtin.set_fact:
         journald_dropin_text: "{{ journald_dropin_content.content | b64decode }}"
@@ -42,7 +41,6 @@
       tags:
         - journald
         - validate
-
     - name: Assert rendered journald options
       ansible.builtin.assert:
         that:
@@ -58,14 +56,12 @@
       tags:
         - journald
         - validate
-
     - name: Collect service facts on systemd hosts
       ansible.builtin.service_facts:
       when: ansible_facts['service_mgr'] == 'systemd'
       tags:
         - journald
         - validate
-
     - name: Assert systemd-journald service is discoverable
       ansible.builtin.assert:
         that:
@@ -75,7 +71,6 @@
       tags:
         - journald
         - validate
-
     - name: Check journald upload drop-in presence
       ansible.builtin.stat:
         path: "{{ journald_upload_dropin_path }}"
@@ -84,7 +79,6 @@
       tags:
         - journald
         - validate
-
     - name: Assert journald upload drop-in exists
       ansible.builtin.assert:
         that:
@@ -95,7 +89,6 @@
       tags:
         - journald
         - validate
-
     - name: Read journald upload drop-in
       ansible.builtin.slurp:
         src: "{{ journald_upload_dropin_path }}"
@@ -104,7 +97,6 @@
       tags:
         - journald
         - validate
-
     - name: Decode journald upload drop-in content
       ansible.builtin.set_fact:
         journald_upload_dropin_text: "{{ journald_upload_dropin_content.content | b64decode }}"
@@ -113,7 +105,6 @@
       tags:
         - journald
         - validate
-
     - name: Assert rendered journald upload options
       ansible.builtin.assert:
         that:
@@ -126,7 +117,6 @@
       tags:
         - journald
         - validate
-
     - name: Assert journald upload service is discoverable on systemd hosts
       ansible.builtin.assert:
         that:
@@ -135,6 +125,37 @@
       when:
         - journald_enable_remote_logging | bool
         - ansible_facts['service_mgr'] == 'systemd'
+      tags:
+        - journald
+        - validate
+    - name: Assert journal remote receiver units are not active
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['services'][item].state != 'running'
+        quiet: true
+      loop:
+        - "{{ journald_remote_socket }}"
+        - "{{ journald_remote_service }}"
+      when:
+        - journald_enable_remote_logging | bool
+        - ansible_facts['service_mgr'] == 'systemd'
+        - item in ansible_facts['services']
+      tags:
+        - journald
+        - validate
+
+    - name: Assert journal remote receiver units are masked
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['services'][item].status == 'masked'
+        quiet: true
+      loop:
+        - "{{ journald_remote_socket }}"
+        - "{{ journald_remote_service }}"
+      when:
+        - journald_enable_remote_logging | bool
+        - ansible_facts['service_mgr'] == 'systemd'
+        - item in ansible_facts['services']
       tags:
         - journald
         - validate

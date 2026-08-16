@@ -28,6 +28,16 @@
       - journald_trusted_cert_file | type_debug == 'str'
       - journald_disable_rsyslog is defined
       - journald_disable_rsyslog | type_debug == 'bool'
+      - journald_manage_tmpfiles_permissions is defined
+      - journald_manage_tmpfiles_permissions | type_debug == 'bool'
+      - journald_tmpfiles_conf_path is defined
+      - journald_tmpfiles_conf_path | type_debug == 'str'
+      - journald_tmpfiles_source_paths is defined
+      - journald_tmpfiles_source_paths | type_debug == 'list'
+      - journald_tmpfiles_file_mode is defined
+      - journald_tmpfiles_file_mode | type_debug == 'str'
+      - journald_tmpfiles_require_source is defined
+      - journald_tmpfiles_require_source | type_debug == 'bool'
     quiet: true
   tags:
     - journald

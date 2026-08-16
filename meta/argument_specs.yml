@@ -70,3 +70,31 @@ argument_specs:
         default: true
         description:
           - Whether rsyslog services should be disabled to avoid duplicate logging.
+      journald_manage_tmpfiles_permissions:
+        type: bool
+        default: false
+        description:
+          - Whether to manage a systemd tmpfiles override for journald log file permissions.
+      journald_tmpfiles_conf_path:
+        type: path
+        default: /etc/tmpfiles.d/systemd.conf
+        description:
+          - Path to the systemd tmpfiles override file managed when tmpfiles permission management is enabled.
+      journald_tmpfiles_source_paths:
+        type: list
+        elements: path
+        default:
+          - /usr/lib/tmpfiles.d/systemd.conf
+          - /lib/tmpfiles.d/systemd.conf
+        description:
+          - Candidate systemd tmpfiles defaults files used to seed the managed override file.
+      journald_tmpfiles_file_mode:
+        type: str
+        default: "0640"
+        description:
+          - File mode applied to tmpfiles entries with type f in the managed systemd tmpfiles override file.
+      journald_tmpfiles_require_source:
+        type: bool
+        default: false
+        description:
+          - Whether to fail when no systemd tmpfiles defaults source file exists on the target.

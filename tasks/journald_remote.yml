@@ -1,11 +1,4 @@
 ---
-- name: Get the list of services
-  ansible.builtin.service_facts:
-  when: ansible_facts['service_mgr'] == 'systemd'
-  tags:
-    - journald
-    - validate
-
 - name: Create journald-upload.conf.d directory if it does not exist
   ansible.builtin.file:
     path: "{{ journald_upload_confd_path }}"
@@ -34,6 +27,13 @@
     - journald
     - install
 
+- name: Refresh service facts after installing journal remote package
+  ansible.builtin.service_facts:
+  when: ansible_facts['service_mgr'] == 'systemd'
+  tags:
+    - journald
+    - validate
+
 - name: Enable systemd-journal-upload service
   ansible.builtin.systemd_service:
     name: "{{ journald_upload_service }}"
@@ -57,10 +57,9 @@
     - journald
     - config
 
-- name: Disable systemd-journal-remote receiver units
+- name: Stop active systemd-journal-remote receiver units
   ansible.builtin.systemd_service:
     name: "{{ item }}"
-    enabled: false
     state: stopped
   loop:
     - "{{ journald_remote_socket }}"
@@ -68,6 +67,37 @@
   when:
     - ansible_facts['service_mgr'] == 'systemd'
     - item in ansible_facts['services']
+    - ansible_facts['services'][item].state == 'running'
+  tags:
+    - journald
+    - service
+
+- name: Disable enabled systemd-journal-remote receiver units
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: false
+  loop:
+    - "{{ journald_remote_socket }}"
+    - "{{ journald_remote_service }}"
+  when:
+    - ansible_facts['service_mgr'] == 'systemd'
+    - item in ansible_facts['services']
+    - ansible_facts['services'][item].status == 'enabled'
+  tags:
+    - journald
+    - service
+
+- name: Mask unmasked systemd-journal-remote receiver units
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    masked: true
+  loop:
+    - "{{ journald_remote_socket }}"
+    - "{{ journald_remote_service }}"
+  when:
+    - ansible_facts['service_mgr'] == 'systemd'
+    - item in ansible_facts['services']
+    - ansible_facts['services'][item].status != 'masked'
   tags:
     - journald
     - service
