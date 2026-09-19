@@ -1,4 +1,10 @@
 ---
+- name: Debug journald_system_max_use
+  ansible.builtin.debug:
+    msg:
+      - "value={{ journald_system_max_use }}"
+      - "type={{ journald_system_max_use | type_debug }}"
+
 - name: Validate role input variables
   ansible.builtin.assert:
     that:
