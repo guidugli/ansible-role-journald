@@ -1,49 +1,64 @@
 ---
-- name: Debug journald_system_max_use
-  ansible.builtin.debug:
-    msg:
-      - "value={{ journald_system_max_use }}"
-      - "type={{ journald_system_max_use | type_debug }}"
-
 - name: Validate role input variables
   ansible.builtin.assert:
     that:
       - journald_compress is defined
-      - journald_compress | type_debug == 'bool'
+      - journald_compress is boolean
+
       - journald_system_max_use is defined
-      - journald_system_max_use | type_debug == 'str'
+      - journald_system_max_use is string
+      - journald_system_max_use is match('^[0-9]+([KMGTP]i?B?|[KMGTP])?$')
+
       - journald_system_keep_free is defined
-      - journald_system_keep_free | type_debug == 'str'
+      - journald_system_keep_free is string
+      - journald_system_keep_free is match('^[0-9]+([KMGTP]i?B?|[KMGTP])?$')
+
       - journald_runtime_max_use is defined
-      - journald_runtime_max_use | type_debug == 'str'
+      - journald_runtime_max_use is string
+      - journald_runtime_max_use is match('^[0-9]+([KMGTP]i?B?|[KMGTP])?$')
+
       - journald_runtime_keep_free is defined
-      - journald_runtime_keep_free | type_debug == 'str'
+      - journald_runtime_keep_free is string
+      - journald_runtime_keep_free is match('^[0-9]+([KMGTP]i?B?|[KMGTP])?$')
+
       - journal_max_file_sec is defined
-      - journal_max_file_sec | type_debug == 'str'
+      - journal_max_file_sec is string
+
       - journald_forward_to_syslog is defined
-      - journald_forward_to_syslog | type_debug == 'bool'
+      - journald_forward_to_syslog is boolean
+
       - journald_enable_remote_logging is defined
-      - journald_enable_remote_logging | type_debug == 'bool'
+      - journald_enable_remote_logging is boolean
+
       - journald_remote_url is defined
-      - journald_remote_url | type_debug == 'str'
+      - journald_remote_url is string
+
       - journald_remote_server_key_file is defined
-      - journald_remote_server_key_file | type_debug == 'str'
+      - journald_remote_server_key_file is string
+
       - journald_remote_server_cert_file is defined
-      - journald_remote_server_cert_file | type_debug == 'str'
+      - journald_remote_server_cert_file is string
+
       - journald_trusted_cert_file is defined
-      - journald_trusted_cert_file | type_debug == 'str'
+      - journald_trusted_cert_file is string
+
       - journald_disable_rsyslog is defined
-      - journald_disable_rsyslog | type_debug == 'bool'
+      - journald_disable_rsyslog is boolean
+
       - journald_manage_tmpfiles_permissions is defined
-      - journald_manage_tmpfiles_permissions | type_debug == 'bool'
+      - journald_manage_tmpfiles_permissions is boolean
+
       - journald_tmpfiles_conf_path is defined
-      - journald_tmpfiles_conf_path | type_debug == 'str'
+      - journald_tmpfiles_conf_path is string
+
       - journald_tmpfiles_source_paths is defined
       - journald_tmpfiles_source_paths | type_debug == 'list'
+
       - journald_tmpfiles_file_mode is defined
-      - journald_tmpfiles_file_mode | type_debug == 'str'
+      - journald_tmpfiles_file_mode is string
+
       - journald_tmpfiles_require_source is defined
-      - journald_tmpfiles_require_source | type_debug == 'bool'
+      - journald_tmpfiles_require_source is boolean
     quiet: true
   tags:
     - journald
